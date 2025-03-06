@@ -50,22 +50,34 @@ Sends a notification via Pushover.
 
 ## Using with Cursor
 
+### Configuration Options
+
+The Pushover MCP can be configured in two ways:
+
+1. **Command-line arguments**:
+   - `--token <token>`: Your Pushover application token
+   - `--user <user>`: Your Pushover user key
+
+2. **Environment variables** (fallback):
+   - `PUSHOVER_TOKEN`: Your Pushover application token
+   - `PUSHOVER_USER`: Your Pushover user key
+
 ### Method 1: Install Globally
 
 Run the MCP server using npx:
 
 ```bash
-npx -y pushover-mcp@latest start --token YOUR_TOKEN --user YOUR_USER
+npx -y pushover-mcp@latest --token YOUR_TOKEN --user YOUR_USER
 ```
 
-In your Cursor IDE
+In your Cursor IDE:
 
 1. Go to `Cursor Settings` > `MCP`
 2. Click `+ Add New MCP Server`
 3. Fill in the form:
    - Name: `Pushover Notification` (or any name you prefer)
    - Type: `command`
-   - Command: `npx -y pushover-mcp@latest start --token YOUR_TOKEN --user YOUR_USER`
+   - Command: `npx -y pushover-mcp@latest --token YOUR_TOKEN --user YOUR_USER`
 
 
 ### Method 2: Project-specific Configuration
@@ -80,10 +92,9 @@ Add an `.cursor/mcp.json` file to your project:
       "args": [
         "-y",
         "pushover-mcp@latest",
-        "start",
         "--token",
         "YOUR_TOKEN",
-        "--user", 
+        "--user",
         "YOUR_USER"
       ]
     }
@@ -105,7 +116,7 @@ By default, Agent will ask for approval before sending notifications. Enable "Yo
 ![Cursor Agent](media/cursor-agent.png)
 
 ## Using with Roo Code
-Access the MCP settings by clicking “Edit MCP Settings” in Roo Code settings or using the “Roo Code: Open MCP Config” command in VS Code's command palette.
+Access the MCP settings by clicking "Edit MCP Settings" in Roo Code settings or using the "Roo Code: Open MCP Config" command in VS Code's command palette.
 
 ```json
 {
@@ -115,10 +126,9 @@ Access the MCP settings by clicking “Edit MCP Settings” in Roo Code settings
       "args": [
         "-y",
         "pushover-mcp@latest",
-        "start",
         "--token",
         "YOUR_TOKEN",
-        "--user", 
+        "--user",
         "YOUR_USER"
       ]
     }
@@ -138,9 +148,33 @@ pnpm install
 # Build
 pnpm build
 
+
 # Run tests
 pnpm test
 ```
+
+## Debugging the Server
+
+To debug your server, you can use the MCP Inspector.
+
+First build the server:
+
+```bash
+pnpm build
+```
+
+Run the following command in your terminal:
+
+```bash
+# Start MCP Inspector and server with all tools
+npx -y @modelcontextprotocol/inspector node dist/index.js --token YOUR_TOKEN --user YOUR_USER
+```
+
+The MCP Inspector provides a web interface where you can:
+- See available tools
+- Test tool calls directly
+- View requests and responses
+- Debug your MCP server implementation
 
 ## License
 
