@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ashiknesin-pushover-mcp-badge.png)](https://mseep.ai/app/ashiknesin-pushover-mcp)
+
 # Pushover MCP
 [![smithery badge](https://smithery.ai/badge/@AshikNesin/pushover-mcp)](https://smithery.ai/server/@AshikNesin/pushover-mcp)
 
