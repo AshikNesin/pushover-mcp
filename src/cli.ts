@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { PushoverMCP } from './index.js';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
 
 const program = new Command();
 
 program
   .name('pushover-mcp')
   .description('MCP for Pushover.net notifications')
-  .version('1.0.0');
+  .version(version);
 
 program
   .command('start')
@@ -18,22 +22,15 @@ program
     let mcp: PushoverMCP | undefined;
 
     try {
-      console.log('Starting Pushover MCP server...');
       mcp = new PushoverMCP();
       await mcp.init({
         token: options.token,
         user: options.user,
       });
-      
-      console.log('Pushover MCP server started successfully');
-      console.log('Available tools:');
-      console.log('  - send: Send a notification via Pushover');
-      console.log('\nServer is ready to accept commands...');
 
       // Handle process signals
       const cleanup = async () => {
         if (mcp) {
-          console.log('\nShutting down MCP server...');
           await mcp.close();
           process.exit(0);
         }
@@ -41,7 +38,7 @@ program
 
       process.on('SIGINT', cleanup);
       process.on('SIGTERM', cleanup);
-      
+
       // Keep the process running
       await new Promise(() => {});
     } catch (error) {
@@ -50,4 +47,4 @@ program
     }
   });
 
-program.parse(); 
+program.parse();

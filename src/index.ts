@@ -1,6 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
 
 const PushoverConfigSchema = z.object({
   token: z.string().min(1),
@@ -28,23 +32,26 @@ export class PushoverMCP {
   constructor() {
     this.server = new McpServer({
       name: "pushover",
-      version: "1.0.0",
+      version: version,
       description: "MCP for sending Pushover notifications",
     });
   }
 
   private registerTools() {
-    this.server.tool(
+    this.server.registerTool(
       "send",
-      "Send a notification via Pushover",
       {
-        message: z.string().min(1),
-        title: z.string().optional(),
-        priority: z.number().min(-2).max(2).optional(),
-        sound: z.string().optional(),
-        url: z.string().url().optional(),
-        url_title: z.string().optional(),
-        device: z.string().optional(),
+        title: "Send Pushover Notification",
+        description: "Send a notification via Pushover",
+        inputSchema: {
+          message: z.string().min(1),
+          title: z.string().optional(),
+          priority: z.number().min(-2).max(2).optional(),
+          sound: z.string().optional(),
+          url: z.string().url().optional(),
+          url_title: z.string().optional(),
+          device: z.string().optional(),
+        },
       },
       async (params) => {
         if (!this.config) {
@@ -86,7 +93,7 @@ export class PushoverMCP {
   async init(config: PushoverConfig): Promise<void> {
     this.config = PushoverConfigSchema.parse(config);
     this.registerTools();
-    
+
     // Initialize transport
     this.transport = new StdioServerTransport();
 
@@ -99,4 +106,4 @@ export class PushoverMCP {
       await this.transport.close();
     }
   }
-} 
+}
