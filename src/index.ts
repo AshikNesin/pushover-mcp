@@ -15,6 +15,7 @@ const NotificationSchema = z.object({
   url: z.string().url().optional(),
   url_title: z.string().optional(),
   device: z.string().optional(),
+  html: z.union([z.literal(0), z.literal(1)]).optional(),
 });
 
 export type PushoverConfig = z.infer<typeof PushoverConfigSchema>;
@@ -45,6 +46,8 @@ export class PushoverMCP {
         url: z.string().url().optional(),
         url_title: z.string().optional(),
         device: z.string().optional(),
+        html: z.union([z.literal(0), z.literal(1)]).optional()
+          .describe("Set to 1 to enable HTML formatting. Supports <b>, <i>, <u>, <a href>, <font color>. Cannot be combined with monospace."),
       },
       async (params) => {
         if (!this.config) {
@@ -61,6 +64,7 @@ export class PushoverMCP {
           ...(params.url && { url: params.url }),
           ...(params.url_title && { url_title: params.url_title }),
           ...(params.device && { device: params.device }),
+          ...(params.html !== undefined && { html: String(params.html) }),
         });
 
         const response = await fetch('https://api.pushover.net/1/messages.json', {
