@@ -18,22 +18,22 @@ program
     let mcp: PushoverMCP | undefined;
 
     try {
-      console.log('Starting Pushover MCP server...');
+      console.error('Starting Pushover MCP server...');
       mcp = new PushoverMCP();
       await mcp.init({
         token: options.token,
         user: options.user,
       });
       
-      console.log('Pushover MCP server started successfully');
-      console.log('Available tools:');
-      console.log('  - send: Send a notification via Pushover');
-      console.log('\nServer is ready to accept commands...');
+      console.error('Pushover MCP server started successfully');
+      console.error('Available tools:');
+      console.error('  - send: Send a notification via Pushover');
+      console.error('\nServer is ready to accept commands...');
 
       // Handle process signals
       const cleanup = async () => {
         if (mcp) {
-          console.log('\nShutting down MCP server...');
+          console.error('\nShutting down MCP server...');
           await mcp.close();
           process.exit(0);
         }
