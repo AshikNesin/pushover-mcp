@@ -85,13 +85,20 @@ type Params = Record<string, string | number | boolean | undefined>;
 export class PushoverError extends Error {
   override readonly name = "PushoverError";
 
+  /** Error messages from Pushover. */
+  readonly errors: string[];
+  /** Request parameters Pushover flagged as invalid, such as `user` or `token`. */
+  readonly invalid: string[];
+
   constructor(
     message: string,
     /** HTTP status, or `0` when Pushover could not be reached. */
     readonly status: number,
-    readonly errors: string[] = [],
+    details: { errors?: string[]; invalid?: string[] } = {},
   ) {
     super(message);
+    this.errors = details.errors ?? [];
+    this.invalid = details.invalid ?? [];
   }
 }
 
@@ -153,9 +160,16 @@ export class PushoverClient {
     const data = (await response.json().catch(() => undefined)) as (T & ApiResponse) | undefined;
     if (!response.ok || data?.status !== 1) {
       const errors = data?.errors ?? [];
+      // Pushover marks each rejected parameter with the value "invalid", e.g. `"user": "invalid"`.
+      const invalid = Object.keys(data ?? {}).filter(
+        (key) => (data as Record<string, unknown>)[key] === "invalid",
+      );
       const detail = errors.length > 0 ? errors.join("; ") : response.statusText;
       const summary = `Pushover API error (HTTP ${response.status})`;
-      throw new PushoverError(detail ? `${summary}: ${detail}` : summary, response.status, errors);
+      throw new PushoverError(detail ? `${summary}: ${detail}` : summary, response.status, {
+        errors,
+        invalid,
+      });
     }
     return data;
   }

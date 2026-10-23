@@ -53,13 +53,19 @@ export const registerValidateUser: ToolRegistrar = (server, { client }) => {
           licenses: user.licenses,
         });
       } catch (error) {
-        if (!(error instanceof PushoverError && error.status === 400)) throw error;
+        // A rejected user or device means "not valid"; anything else, like a bad token, is an error.
+        const rejected = error instanceof PushoverError && error.invalid.some(isValidatedField);
+        if (!rejected) throw error;
         const errors = error.errors.length > 0 ? error.errors : [error.message];
         return structuredResult({ valid: false, devices: [], licenses: [], errors });
       }
     },
   );
 };
+
+function isValidatedField(field: string): boolean {
+  return field === "user" || field === "device";
+}
 
 export const registerGetLimits: ToolRegistrar = (server, { client }) => {
   server.registerTool(

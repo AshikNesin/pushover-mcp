@@ -59,7 +59,7 @@ describe("PushoverClient", () => {
   it("throws PushoverError with the API's error messages", async () => {
     mockPushover({
       status: 400,
-      body: { status: 0, request: "r", errors: ["user identifier is invalid"] },
+      body: { status: 0, request: "r", user: "invalid", errors: ["user identifier is invalid"] },
     });
 
     const error = await client.getLimits().catch((e: unknown) => e);
@@ -67,6 +67,7 @@ describe("PushoverClient", () => {
     expect(error).toMatchObject({
       status: 400,
       errors: ["user identifier is invalid"],
+      invalid: ["user"],
       message: "Pushover API error (HTTP 400): user identifier is invalid",
     });
   });
