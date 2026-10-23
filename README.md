@@ -5,7 +5,9 @@
 
 An [MCP](https://modelcontextprotocol.io) server that lets AI agents send push notifications to your phone and desktop through [Pushover](https://pushover.net).
 
-> "Run the test suite and notify me when it's done."
+<a href="media/demo.mp4"><img src="media/demo.gif" width="600" alt="Claude Code runs tests and a deploy, sending a Pushover notification to a phone at each step, then an emergency alert that the agent sees acknowledged"></a>
+
+[Watch the full demo](media/demo.mp4) (30 s, MP4)
 
 - **Rich notifications:** title, link, sound, device, HTML or monospace text, image attachments
 - **Emergency alerts:** repeat until acknowledged, then check or cancel them

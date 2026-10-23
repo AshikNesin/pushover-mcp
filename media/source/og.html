@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pushover-mcp OG image</title>
+<style>
+  :root { --bg: #0e0e0d; --text: #f2efe9; --muted: #9b968e; --line: #3a3733; --card: #222120; --blue: #2b8de8; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1280px; height: 640px; overflow: hidden; background: var(--bg); }
+  body { font-family: "Inter", sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; position: relative; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+
+  .left { position: absolute; left: 88px; top: 88px; width: 560px; }
+  .brand { display: flex; align-items: center; gap: 16px; font-size: 28px; font-weight: 600; }
+  .icon { width: 52px; height: 52px; border-radius: 13px; background: var(--blue); color: #fff; display: grid; place-items: center; }
+  .icon svg { width: 30px; height: 30px; }
+  h1 { font-size: 60px; font-weight: 750; letter-spacing: -2px; line-height: 1.06; margin-top: 40px; }
+  .command { margin-top: 40px; padding: 20px 26px; border: 1px solid var(--line); border-radius: 14px; font-size: 25px; font-weight: 600; display: inline-block; }
+  .command span { color: var(--blue); margin-right: 14px; }
+  .clients { position: absolute; left: 88px; bottom: 72px; font-size: 18px; color: var(--muted); letter-spacing: 1px; }
+
+  .stack { position: absolute; left: 730px; top: 108px; width: 462px; display: flex; flex-direction: column; gap: 14px; }
+  .note { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 20px 24px; }
+  .note-head { display: flex; align-items: center; gap: 11px; font-size: 16px; color: var(--muted); }
+  .note-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--blue); color: #fff; display: grid; place-items: center; }
+  .note-icon svg { width: 16px; height: 16px; }
+  .note-head .when { margin-left: auto; }
+  .note-title { font-size: 23px; font-weight: 700; margin-top: 11px; }
+  .note-body { font-size: 18px; color: #b4afa7; margin-top: 3px; }
+  .note.emergency { background: #3d1e21; border-color: #a63d42; }
+  .note.emergency .note-icon { background: #e5484d; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.96 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.41 5.96-2.74 7.33"/>
+    <path d="M10.27 21a2 2 0 0 0 3.46 0"/>
+  </symbol>
+</svg>
+
+<div class="left">
+  <div class="brand mono"><span class="icon"><svg><use href="#bell"/></svg></span>pushover-mcp</div>
+  <h1>Push notifications for your AI agents.</h1>
+  <div class="command mono"><span>$</span>npx -y pushover-mcp@latest</div>
+</div>
+<div class="clients mono">Works with Claude Code · Cursor · VS Code · Windsurf</div>
+
+<div class="stack">
+  <div class="note">
+    <div class="note-head"><span class="note-icon"><svg><use href="#bell"/></svg></span>Pushover<span class="when">4m ago</span></div>
+    <div class="note-title">Tests passed</div>
+    <div class="note-body">312 passed · 0 failed · 4m 12s</div>
+  </div>
+  <div class="note">
+    <div class="note-head"><span class="note-icon"><svg><use href="#bell"/></svg></span>Pushover<span class="when">1m ago</span></div>
+    <div class="note-title">Deploy finished</div>
+    <div class="note-body">v2.4.0 is live on staging</div>
+  </div>
+  <div class="note emergency">
+    <div class="note-head"><span class="note-icon"><svg><use href="#bell"/></svg></span>Pushover · Emergency<span class="when">now</span></div>
+    <div class="note-title">Checkout errors at 12%</div>
+    <div class="note-body">Repeats until you acknowledge</div>
+  </div>
+</div>
+
+<script>
+  window.VIDEO = { width: 1280, height: 640, duration: 0 };
+  window.render = () => {};
+</script>
+</body>
+</html>
