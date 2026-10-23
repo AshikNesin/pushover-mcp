@@ -50,10 +50,10 @@ async function main(): Promise<void> {
   if (values.version) return console.log(VERSION);
 
   const [command, ...extra] = positionals;
-  if (command === "start" && extra.length === 0) {
+  const unexpected = command === "start" ? extra[0] : command;
+  if (unexpected !== undefined) throw new ConfigError(`Unexpected argument "${unexpected}".`);
+  if (command === "start") {
     console.error('[pushover-mcp] "start" is deprecated and no longer needed: run `pushover-mcp`.');
-  } else if (command !== undefined) {
-    throw new ConfigError(`Unexpected argument "${command}".`);
   }
 
   const config = resolveConfig({
