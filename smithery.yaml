@@ -1,28 +1,33 @@
-# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
-
+# Smithery configuration: https://smithery.ai/docs/config#smitheryyaml
 startCommand:
   type: stdio
   configSchema:
-    # JSON Schema defining the configuration options for the MCP.
     type: object
-    required:
-      - token
-      - user
+    required: [token, user]
     properties:
       token:
         type: string
-        description: Your Pushover application token
+        description: Pushover application API token
       user:
         type: string
-        description: Your Pushover user key
-  commandFunction:
-    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
-    |-
+        description: Pushover user or group key
+      defaultDevice:
+        type: string
+        description: Device to target when a notification does not name one
+      defaultSound:
+        type: string
+        description: Sound to use when a notification does not name one
+  commandFunction: |-
     (config) => ({
-      command: 'node',
-      args: ['dist/cli.js', 'start', '--token', config.token, '--user', config.user],
-      env: {}
+      command: "node",
+      args: ["dist/cli.js"],
+      env: {
+        PUSHOVER_TOKEN: config.token,
+        PUSHOVER_USER: config.user,
+        PUSHOVER_DEFAULT_DEVICE: config.defaultDevice ?? "",
+        PUSHOVER_DEFAULT_SOUND: config.defaultSound ?? "",
+      },
     })
   exampleConfig:
-    token: YOUR_TOKEN
-    user: YOUR_USER
+    token: YOUR_APP_TOKEN
+    user: YOUR_USER_KEY
