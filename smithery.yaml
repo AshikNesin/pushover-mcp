@@ -17,6 +17,10 @@ startCommand:
       defaultSound:
         type: string
         description: Sound to use when a notification does not name one
+      defaultPriority:
+        type: integer
+        enum: [-2, -1, 0, 1]
+        description: Priority to use when a notification does not set one
   commandFunction: |-
     (config) => ({
       command: "node",
@@ -26,6 +30,7 @@ startCommand:
         PUSHOVER_USER: config.user,
         PUSHOVER_DEFAULT_DEVICE: config.defaultDevice ?? "",
         PUSHOVER_DEFAULT_SOUND: config.defaultSound ?? "",
+        PUSHOVER_DEFAULT_PRIORITY: String(config.defaultPriority ?? ""),
       },
     })
   exampleConfig:

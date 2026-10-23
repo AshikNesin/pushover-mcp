@@ -125,11 +125,11 @@ Only `message` is required.
 | `title` | Defaults to your Pushover app's name. |
 | `priority` | `-2` silent, `-1` quiet, `0` normal, `1` high, `2` emergency. |
 | `sound` | Sound name from `list_sounds`. |
-| `device` | Device name to target; join several with commas. Defaults to all. |
+| `device` | Device name to target; join several with commas. Defaults to the configured default device, or all devices. |
 | `url`, `url_title` | A link, and an optional label for it. |
 | `html` | Render `<b>`, `<i>`, `<u>`, `<font color>` and `<a href>`. |
 | `monospace` | Render in a monospace font. Can't be combined with `html`. |
-| `ttl` | Seconds until the notification is deleted from devices. |
+| `ttl` | Seconds until the notification is deleted from devices. Ignored for emergency (priority 2). |
 | `timestamp` | ISO 8601 time to show instead of the time it was received. |
 | `attachment_path` | Local image to attach (jpg, png, gif, webp, heic), up to 5 MB. stdio only. |
 | `attachment_base64`, `attachment_type` | Base64 image data and its MIME type. |
