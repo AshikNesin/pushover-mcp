@@ -1,4 +1,5 @@
 const API_BASE_URL = "https://api.pushover.net/1";
+const REQUEST_TIMEOUT_MS = 10_000;
 
 export interface PushoverCredentials {
   /** Application API token. */
@@ -140,24 +141,31 @@ export class PushoverClient {
 
     let response: Response;
     try {
-      response = await fetch(url, { method, body: method === "POST" ? form : undefined });
+      response = await fetch(url, {
+        method,
+        body: method === "POST" ? form : undefined,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
     } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error);
-      throw new PushoverError(`Could not reach Pushover: ${reason}`, 0);
+      throw new PushoverError(`Could not reach Pushover: ${describeFailure(error)}`, 0);
     }
 
     const data = (await response.json().catch(() => undefined)) as (T & ApiResponse) | undefined;
     if (!response.ok || data?.status !== 1) {
       const errors = data?.errors ?? [];
       const detail = errors.length > 0 ? errors.join("; ") : response.statusText;
-      throw new PushoverError(
-        `Pushover API error (HTTP ${response.status}): ${detail}`,
-        response.status,
-        errors,
-      );
+      const summary = `Pushover API error (HTTP ${response.status})`;
+      throw new PushoverError(detail ? `${summary}: ${detail}` : summary, response.status, errors);
     }
     return data;
   }
+}
+
+/** Explains a failed fetch. Node reports only "fetch failed" and keeps the reason in `cause`. */
+function describeFailure(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  if (error.name === "TimeoutError") return `no response within ${REQUEST_TIMEOUT_MS / 1000}s`;
+  return error.cause instanceof Error ? `${error.message} (${error.cause.message})` : error.message;
 }
 
 /** Encodes params as form fields: drops unset values and sends `true` as `1`. */

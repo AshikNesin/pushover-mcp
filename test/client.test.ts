@@ -86,12 +86,55 @@ describe("PushoverClient", () => {
     );
   });
 
-  it("wraps network failures", async () => {
-    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockRejectedValue(new TypeError("fetch failed")));
+  it.each([
+    ["getReceipt", () => client.getReceipt("rcpt"), "GET", "/1/receipts/rcpt.json", {}],
+    [
+      "cancelReceipt",
+      () => client.cancelReceipt("rcpt"),
+      "POST",
+      "/1/receipts/rcpt/cancel.json",
+      {},
+    ],
+    [
+      "validateUser",
+      () => client.validateUser("phone"),
+      "POST",
+      "/1/users/validate.json",
+      { user: "user-key", device: "phone" },
+    ],
+  ])("%s calls %s %s", async (_, call, method, path, fields) => {
+    const fetchMock = mockPushover({ body: { status: 1, request: "r" } });
+
+    await call();
+
+    expect(sentRequest(fetchMock)).toEqual({
+      method,
+      path,
+      fields: { token: "app-token", ...fields },
+    });
+  });
+
+  it("wraps network failures with their cause", async () => {
+    const failure = new TypeError("fetch failed", {
+      cause: new Error("getaddrinfo ENOTFOUND api.pushover.net"),
+    });
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockRejectedValue(failure));
 
     await expect(client.getLimits()).rejects.toMatchObject({
       status: 0,
-      message: "Could not reach Pushover: fetch failed",
+      message: "Could not reach Pushover: fetch failed (getaddrinfo ENOTFOUND api.pushover.net)",
     });
+  });
+
+  it("times out stalled requests", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockRejectedValue(new DOMException("The operation timed out.", "TimeoutError"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(client.getLimits()).rejects.toThrow(
+      "Could not reach Pushover: no response within 10s",
+    );
+    expect(fetchMock.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal);
   });
 });
