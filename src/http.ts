@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { createServer as createNodeServer } from "node:http";
-import type { AddressInfo } from "node:net";
+import { type AddressInfo, isIPv4 } from "node:net";
 import { toNodeHandler } from "@modelcontextprotocol/node";
 import {
   createMcpHandler,
@@ -30,18 +30,26 @@ export interface HttpServerHandle {
   close(): Promise<void>;
 }
 
+/** True for `localhost` and loopback IP literals (`127.0.0.0/8`, `::1`). */
 export function isLoopbackHost(host: string): boolean {
-  return host === "localhost" || host === "::1" || host.startsWith("127.");
+  return host === "localhost" || host === "::1" || (isIPv4(host) && host.startsWith("127."));
 }
 
 /**
  * Wraps the MCP Streamable HTTP handler with routing, DNS-rebinding protection
- * and optional bearer-token auth.
+ * and bearer-token auth. An auth token is required unless `loopbackOnly` is set.
  */
 export function createHttpHandler(
   factory: McpServerFactory,
   options: { authToken?: string; loopbackOnly: boolean },
 ): HttpHandler {
+  if (!options.loopbackOnly && !options.authToken) {
+    throw new Error(
+      "Refusing to serve beyond loopback without an auth token: " +
+        "set PUSHOVER_MCP_AUTH_TOKEN or pass --auth-token.",
+    );
+  }
+
   const mcp = createMcpHandler(factory, {
     onerror: (error) => console.error(`[pushover-mcp] ${error.message}`),
   });

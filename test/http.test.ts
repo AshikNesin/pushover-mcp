@@ -1,26 +1,59 @@
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { describe, expect, it } from "vitest";
-import { createHttpHandler } from "../src/http.js";
+import { createHttpHandler, isLoopbackHost } from "../src/http.js";
 import { createServer } from "../src/server.js";
 import { credentials } from "./helpers.js";
 
 const factory = () => createServer(credentials);
 const endpoint = "http://localhost:3000/mcp";
 
+/** A JSON-RPC POST carrying the Host header a real client would send for `url`. */
 const post = (url: string, headers: Record<string, string> = {}) =>
   new Request(url, {
     method: "POST",
-    headers: { "content-type": "application/json", ...headers },
+    headers: {
+      host: new URL(url).host,
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+      ...headers,
+    },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
   });
 
+describe("isLoopbackHost", () => {
+  it.each(["localhost", "127.0.0.1", "127.1.2.3", "::1"])("accepts %s", (host) => {
+    expect(isLoopbackHost(host)).toBe(true);
+  });
+
+  it.each(["0.0.0.0", "192.168.1.10", "127.attacker.example", "localhost.example.com", "::"])(
+    "rejects %s",
+    (host) => {
+      expect(isLoopbackHost(host)).toBe(false);
+    },
+  );
+});
+
 describe("createHttpHandler", () => {
+  it("requires an auth token unless loopback-only", () => {
+    expect(() => createHttpHandler(factory, { loopbackOnly: false })).toThrow(
+      "Refusing to serve beyond loopback without an auth token",
+    );
+  });
+
   it("serves only /mcp", async () => {
     const handler = createHttpHandler(factory, { loopbackOnly: true });
 
     const response = await handler.fetch(post("http://localhost:3000/other"));
 
     expect(response.status).toBe(404);
+  });
+
+  it("accepts local Host and Origin headers", async () => {
+    const handler = createHttpHandler(factory, { loopbackOnly: true });
+
+    const response = await handler.fetch(post(endpoint, { origin: "http://localhost:3000" }));
+
+    expect(response.status).toBe(200);
   });
 
   it("rejects foreign Host headers when bound to loopback", async () => {
