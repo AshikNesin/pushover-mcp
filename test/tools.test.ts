@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdtemp, rm, truncate, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -115,6 +116,22 @@ describe("send_notification", () => {
     });
   });
 
+  it.skipIf(process.platform === "win32")(
+    "rejects non-files without blocking on them",
+    async () => {
+      const fetchMock = mockPushover();
+      const path = await tempFile("pipe.png");
+      await rm(path);
+      execFileSync("mkfifo", [path]);
+
+      const result = await send({ message: "Chart", attachment_path: path });
+
+      expect(textOf(result)).toContain("is not a file");
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+    2000,
+  );
+
   it("rejects oversized files before reading them", async () => {
     const fetchMock = mockPushover();
     const path = await tempFile("huge.png");
@@ -151,6 +168,11 @@ describe("send_notification", () => {
     [{ html: true, monospace: true }, "Use either html or monospace, not both."],
     [{ url_title: "Open" }, "url_title requires url."],
     [{ attachment_base64: "aGk=" }, "attachment_base64 and attachment_type must be used together."],
+    [
+      { attachment_path: "chart.png", attachment_base64: "aGk=", attachment_type: "image/png" },
+      "Use either attachment_path or attachment_base64, not both.",
+    ],
+    [{ attachment_path: "" }, "attachment_path"],
     [{ retry: 30, tags: ["x"] }, "retry, tags only apply to priority 2 notifications."],
     [{ attachment_path: "notes.txt" }, 'Unsupported attachment type "notes.txt"'],
     [

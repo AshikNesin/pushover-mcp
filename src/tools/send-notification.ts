@@ -72,6 +72,7 @@ const fields = {
 const fileField = {
   attachment_path: z
     .string()
+    .min(1)
     .optional()
     .describe("Path to a local image (jpg, png, gif, webp, heic) to attach, up to 5 MB."),
 };
@@ -158,7 +159,7 @@ async function toAttachment(
   base64?: string,
   type?: ImageMimeType,
 ): Promise<Attachment | undefined> {
-  if (path) return readAttachment(path);
-  if (base64 && type) return base64Attachment(base64, type);
+  if (path !== undefined) return readAttachment(path);
+  if (base64 !== undefined && type !== undefined) return base64Attachment(base64, type);
   return undefined;
 }

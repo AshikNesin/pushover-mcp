@@ -1,3 +1,4 @@
+import { constants } from "node:fs";
 import { open } from "node:fs/promises";
 import { homedir } from "node:os";
 import { extname, resolve } from "node:path";
@@ -34,7 +35,8 @@ export async function readAttachment(path: string): Promise<Attachment> {
   }
 
   // Check the size before reading, so an oversized file is never loaded into memory.
-  const file = await open(expandHome(path));
+  // O_NONBLOCK keeps a FIFO from blocking the open, so the isFile() check can reject it.
+  const file = await open(expandHome(path), constants.O_RDONLY | constants.O_NONBLOCK);
   try {
     const stats = await file.stat();
     if (!stats.isFile()) throw new Error(`Attachment "${path}" is not a file.`);
