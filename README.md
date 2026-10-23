@@ -2,7 +2,6 @@
 
 [![npm](https://img.shields.io/npm/v/pushover-mcp)](https://www.npmjs.com/package/pushover-mcp)
 [![CI](https://github.com/AshikNesin/pushover-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AshikNesin/pushover-mcp/actions/workflows/ci.yml)
-[![smithery badge](https://smithery.ai/badge/@AshikNesin/pushover-mcp)](https://smithery.ai/server/@AshikNesin/pushover-mcp)
 
 An [MCP](https://modelcontextprotocol.io) server that lets AI agents send push notifications to your phone and desktop through [Pushover](https://pushover.net).
 
@@ -82,28 +81,6 @@ Add `.vscode/mcp.json`. VS Code prompts for the keys once and stores them secure
 }
 ```
 
-### Docker
-
-```bash
-docker build -t pushover-mcp https://github.com/AshikNesin/pushover-mcp.git
-```
-
-Then use `docker` as the command in any config above:
-
-```json
-{
-  "command": "docker",
-  "args": ["run", "-i", "--rm", "-e", "PUSHOVER_TOKEN", "-e", "PUSHOVER_USER", "pushover-mcp"],
-  "env": { "PUSHOVER_TOKEN": "YOUR_TOKEN", "PUSHOVER_USER": "YOUR_USER_KEY" }
-}
-```
-
-### Smithery
-
-```bash
-npx -y @smithery/cli install @AshikNesin/pushover-mcp --client claude
-```
-
 ## Tools
 
 | Tool | What it does |
@@ -157,7 +134,7 @@ Run `npx pushover-mcp --help` for the full list.
 
 ## HTTP mode
 
-By default each client starts its own server over stdio. HTTP mode instead runs one long-lived server that clients connect to by URL. Use it for Docker, hosted platforms, or sharing one server between clients.
+By default each client starts its own server over stdio. HTTP mode instead runs one long-lived server that clients connect to by URL. Use it for hosted platforms or sharing one server between clients.
 
 ```bash
 PUSHOVER_TOKEN=... PUSHOVER_USER=... npx pushover-mcp --transport http
@@ -173,16 +150,12 @@ claude mcp add --transport http pushover https://pushover.example.com/mcp --head
 Anyone who can reach the server can send notifications with your keys, so:
 
 - It listens on `127.0.0.1` only, and rejects requests whose `Host` or `Origin` isn't local.
-- To listen on other interfaces (for example `--host 0.0.0.0` in Docker), you must set an auth token. Clients then send `Authorization: Bearer <token>`.
+- To listen on other interfaces (for example `--host 0.0.0.0`), you must set an auth token. Clients then send `Authorization: Bearer <token>`.
 - `attachment_path` is turned off, so clients can't read files from the server's disk.
 - For remote access, put it behind HTTPS.
 
 ```bash
-docker run -p 3000:3000 \
-  -e PUSHOVER_TOKEN -e PUSHOVER_USER \
-  -e PUSHOVER_MCP_TRANSPORT=http -e PUSHOVER_MCP_HOST=0.0.0.0 \
-  -e PUSHOVER_MCP_AUTH_TOKEN=a-long-random-secret \
-  pushover-mcp
+PUSHOVER_MCP_AUTH_TOKEN=a-long-random-secret npx pushover-mcp --transport http --host 0.0.0.0
 ```
 
 ## Use as a library
@@ -226,7 +199,7 @@ To everyone whose reports and pull requests shaped v2:
 - [@craigles75](https://github.com/craigles75) proposed HTML formatting ([#9](https://github.com/AshikNesin/pushover-mcp/pull/9)).
 - [@webbrain-one](https://github.com/webbrain-one) proposed the stderr logging fix ([#10](https://github.com/AshikNesin/pushover-mcp/pull/10)).
 - [@punkpeye](https://github.com/punkpeye) flagged the Docker setup for the Glama directory ([#4](https://github.com/AshikNesin/pushover-mcp/issues/4)).
-- [@calclavia](https://github.com/calclavia) added the original Smithery and Docker setup ([#2](https://github.com/AshikNesin/pushover-mcp/pull/2)).
+- [@calclavia](https://github.com/calclavia) added the original Docker setup ([#2](https://github.com/AshikNesin/pushover-mcp/pull/2)).
 
 ## License
 
