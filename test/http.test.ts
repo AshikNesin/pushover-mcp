@@ -1,5 +1,5 @@
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished } from "vitest";
 import { createHttpHandler, isLoopbackHost } from "../src/http.js";
 import { createServer } from "../src/server.js";
 import { credentials } from "./helpers.js";
@@ -85,19 +85,24 @@ describe("createHttpHandler", () => {
     expect(response.headers.get("www-authenticate")).toContain("Bearer");
   });
 
-  it("serves MCP clients that send the token", async () => {
-    const handler = createHttpHandler(factory, { authToken: "secret", loopbackOnly: false });
-    const transport = new StreamableHTTPClientTransport(new URL("http://mcp.example.com/mcp"), {
-      requestInit: { headers: { authorization: "Bearer secret" } },
-      fetch: (input, init) => handler.fetch(new Request(input, init)),
-    });
-    const client = new Client({ name: "test-client", version: "1.0.0" });
+  it.each(["secret", "a passphrase with spaces"])(
+    "serves MCP clients that send the token %j",
+    async (token) => {
+      const handler = createHttpHandler(factory, { authToken: token, loopbackOnly: false });
+      const transport = new StreamableHTTPClientTransport(new URL("http://mcp.example.com/mcp"), {
+        requestInit: { headers: { authorization: `Bearer ${token}` } },
+        fetch: (input, init) => handler.fetch(new Request(input, init)),
+      });
+      const client = new Client({ name: "test-client", version: "1.0.0" });
+      onTestFinished(async () => {
+        await client.close();
+        await handler.close();
+      });
 
-    await client.connect(transport);
-    const { tools } = await client.listTools();
+      await client.connect(transport);
+      const { tools } = await client.listTools();
 
-    expect(tools).toHaveLength(6);
-    await client.close();
-    await handler.close();
-  });
+      expect(tools).toHaveLength(6);
+    },
+  );
 });

@@ -23,7 +23,10 @@ export function sentRequest(fetchMock: FetchMock, index = 0) {
 
   const [input, init] = call;
   const url = new URL(String(input));
-  const form = init?.body instanceof URLSearchParams ? init.body : url.searchParams;
+  if (init?.method === "POST" && !(init.body instanceof URLSearchParams)) {
+    throw new Error("POST request has no form body");
+  }
+  const form = init?.method === "POST" ? (init.body as URLSearchParams) : url.searchParams;
   return { method: init?.method, path: url.pathname, fields: Object.fromEntries(form) };
 }
 

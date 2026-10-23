@@ -34,6 +34,9 @@ const TOOLS: ToolRegistrar[] = [
 
 /** Creates an MCP server exposing the Pushover tools. */
 export function createServer(config: PushoverConfig, options: CreateServerOptions = {}): McpServer {
+  if (!config.token || !config.user) {
+    throw new Error("createServer needs a Pushover app token and user key.");
+  }
   const server = new McpServer(
     { name: "pushover-mcp", title: "Pushover", version: VERSION },
     { instructions: INSTRUCTIONS },

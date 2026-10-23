@@ -105,8 +105,11 @@ export async function serveHttp(
 }
 
 function hasBearerToken(request: Request, expected: string): boolean {
-  const [scheme, token] = (request.headers.get("authorization") ?? "").split(" ");
-  return scheme?.toLowerCase() === "bearer" && token !== undefined && safeEqual(token, expected);
+  const header = request.headers.get("authorization") ?? "";
+  const scheme = "bearer ";
+  return (
+    header.toLowerCase().startsWith(scheme) && safeEqual(header.slice(scheme.length), expected)
+  );
 }
 
 /** Constant-time comparison; hashing first makes the lengths equal. */

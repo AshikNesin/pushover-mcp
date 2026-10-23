@@ -143,6 +143,11 @@ describe("send_notification", () => {
 
   it.each([
     [{ attachment_base64: "aGk=", attachment_type: "application/pdf" }, "attachment_type"],
+    [
+      { attachment_type: "image/png" },
+      "attachment_base64 and attachment_type must be used together.",
+    ],
+    [{ attachment_base64: "", attachment_type: "image/png" }, "attachment_base64"],
     [{ html: true, monospace: true }, "Use either html or monospace, not both."],
     [{ url_title: "Open" }, "url_title requires url."],
     [{ attachment_base64: "aGk=" }, "attachment_base64 and attachment_type must be used together."],
@@ -261,7 +266,7 @@ describe("account tools", () => {
   it("validate_user reports an invalid key without failing", async () => {
     mockPushover({
       status: 400,
-      body: { status: 0, request: "r", errors: ["user key is invalid"] },
+      body: { status: 0, request: "r", user: "invalid", errors: ["user key is invalid"] },
     });
     const client = await connect();
 
@@ -277,7 +282,7 @@ describe("account tools", () => {
   });
 
   it("validate_user falls back to the error message when Pushover gives no reasons", async () => {
-    mockPushover({ status: 400, body: { status: 0, request: "r" } });
+    mockPushover({ status: 400, body: { status: 0, request: "r", device: "invalid" } });
     const client = await connect();
 
     const result = await client.callTool({ name: "validate_user", arguments: {} });
@@ -286,6 +291,19 @@ describe("account tools", () => {
       valid: false,
       errors: ["Pushover API error (HTTP 400)"],
     });
+  });
+
+  it("validate_user reports other failures, like a bad app token, as errors", async () => {
+    mockPushover({
+      status: 400,
+      body: { status: 0, request: "r", token: "invalid", errors: ["application token is invalid"] },
+    });
+    const client = await connect();
+
+    const result = await client.callTool({ name: "validate_user", arguments: {} });
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain("application token is invalid");
   });
 
   it("get_limits returns the quota and reset time", async () => {

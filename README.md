@@ -139,7 +139,7 @@ Only `message` is required.
 
 ## Configuration
 
-Set options as environment variables or command-line flags. Flags win.
+Set options as environment variables or command-line flags. Flags win, but anyone on the machine can see them in process listings, so prefer environment variables for secrets.
 
 | Environment variable | Flag | Description |
 | --- | --- | --- |

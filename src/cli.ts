@@ -23,6 +23,8 @@ Transport
   --port <port>               Default: 3000            env: PUSHOVER_MCP_PORT, PORT
   --auth-token <token>        Bearer token for HTTP    env: PUSHOVER_MCP_AUTH_TOKEN
 
+  Flags are visible in process listings; prefer env vars for secrets.
+
   -h, --help                  Show this help
   -v, --version               Show the version
 

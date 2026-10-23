@@ -22,7 +22,7 @@ Existing v1 configs keep working: `pushover-mcp start --token … --user …` st
 
 - `send_notification` covers the whole Pushover message API: `html`, `monospace`, `ttl`, `timestamp`, image attachments, and emergency `retry`, `expire`, `callback` and `tags`. HTML formatting was proposed by [@craigles75](https://github.com/craigles75) in [#9](https://github.com/AshikNesin/pushover-mcp/pull/9).
 - New tools: `get_receipt`, `cancel_emergency`, `list_sounds`, `validate_user` and `get_limits`.
-- Every tool has a title, annotations and an output schema, and returns structured content.
+- All tools have a title and annotations; all except `cancel_emergency` also have an output schema and return structured content.
 - Configuration through environment variables, with defaults for device, sound and priority.
 - Optional Streamable HTTP transport (`--transport http`), with localhost-only binding by default, Host and Origin checks, and bearer-token auth.
 - Server instructions telling agents when and how to notify.

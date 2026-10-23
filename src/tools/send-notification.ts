@@ -65,7 +65,7 @@ const fields = {
     .array(z.string().min(1))
     .optional()
     .describe("Priority 2 only: labels for cancelling with cancel_emergency."),
-  attachment_base64: z.base64().optional().describe("Base64-encoded image, up to 5 MB."),
+  attachment_base64: z.base64().min(1).optional().describe("Base64-encoded image, up to 5 MB."),
   attachment_type: z.enum(IMAGE_MIME_TYPES).optional().describe("MIME type of attachment_base64."),
 };
 
@@ -139,10 +139,10 @@ function assertConsistent(input: SendNotificationInput): void {
   if (input.url_title && !input.url) {
     throw new Error("url_title requires url.");
   }
-  if (!input.attachment_base64 !== !input.attachment_type) {
+  if ((input.attachment_base64 === undefined) !== (input.attachment_type === undefined)) {
     throw new Error("attachment_base64 and attachment_type must be used together.");
   }
-  if (input.attachment_path && input.attachment_base64) {
+  if (input.attachment_path !== undefined && input.attachment_base64 !== undefined) {
     throw new Error("Use either attachment_path or attachment_base64, not both.");
   }
   const emergencyOnly = (["retry", "expire", "callback", "tags"] as const).filter(
