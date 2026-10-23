@@ -2,7 +2,7 @@ import { z } from "zod";
 import { PushoverError } from "../pushover/client.js";
 import { structuredResult, type ToolRegistrar, toIsoTime } from "./shared.js";
 
-const readOnly = { readOnlyHint: true, idempotentHint: true, openWorldHint: false };
+const readOnly = { readOnlyHint: true, idempotentHint: true, openWorldHint: true };
 
 export const registerListSounds: ToolRegistrar = (server, { client }) => {
   server.registerTool(
@@ -54,7 +54,8 @@ export const registerValidateUser: ToolRegistrar = (server, { client }) => {
         });
       } catch (error) {
         if (!(error instanceof PushoverError && error.status === 400)) throw error;
-        return structuredResult({ valid: false, devices: [], licenses: [], errors: error.errors });
+        const errors = error.errors.length > 0 ? error.errors : [error.message];
+        return structuredResult({ valid: false, devices: [], licenses: [], errors });
       }
     },
   );

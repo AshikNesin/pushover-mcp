@@ -24,7 +24,7 @@ export const registerGetReceipt: ToolRegistrar = (server, { client }) => {
       description: "Check whether an emergency (priority 2) notification has been acknowledged.",
       inputSchema: z.object({ receipt: receiptField }),
       outputSchema: receiptOutput,
-      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+      annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
     },
     async ({ receipt }) => {
       const status = await client.getReceipt(receipt);
@@ -57,9 +57,10 @@ export const registerCancelEmergency: ToolRegistrar = (server, { client }) => {
       }),
       annotations: {
         readOnlyHint: false,
-        destructiveHint: false,
+        // Cancelled alerts can't be resumed.
+        destructiveHint: true,
         idempotentHint: true,
-        openWorldHint: false,
+        openWorldHint: true,
       },
     },
     async ({ receipt, tag }) => {

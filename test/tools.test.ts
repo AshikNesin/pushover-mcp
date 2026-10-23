@@ -1,10 +1,19 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, truncate, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished } from "vitest";
 import { connect, credentials, mockPushover, sentRequest, textOf } from "./helpers.js";
 
 const ok = { status: 1, request: "req-1" };
+
+/** Creates a file in a temp directory that is removed when the test finishes. */
+async function tempFile(name: string, contents = ""): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), "pushover-mcp-"));
+  onTestFinished(() => rm(dir, { recursive: true, force: true }));
+  const path = join(dir, name);
+  await writeFile(path, contents);
+  return path;
+}
 
 describe("tool listing", () => {
   it("registers every tool with an input schema", async () => {
@@ -96,9 +105,7 @@ describe("send_notification", () => {
 
   it("attaches a local image", async () => {
     const fetchMock = mockPushover({ body: ok });
-    const dir = await mkdtemp(join(tmpdir(), "pushover-mcp-"));
-    const path = join(dir, "chart.PNG");
-    await writeFile(path, "png-bytes");
+    const path = await tempFile("chart.PNG", "png-bytes");
 
     await send({ message: "Chart", attachment_path: path });
 
@@ -108,7 +115,34 @@ describe("send_notification", () => {
     });
   });
 
+  it("rejects oversized files before reading them", async () => {
+    const fetchMock = mockPushover();
+    const path = await tempFile("huge.png");
+    await truncate(path, 5_242_881);
+
+    const result = await send({ message: "Chart", attachment_path: path });
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain("Pushover allows at most 5242880");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects attachment_path when file attachments are off", async () => {
+    const fetchMock = mockPushover();
+    const client = await connect(credentials, { allowFileAttachments: false });
+
+    const result = await client.callTool({
+      name: "send_notification",
+      arguments: { message: "Chart", attachment_path: "/etc/hosts.png" },
+    });
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toContain("attachment_path");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it.each([
+    [{ attachment_base64: "aGk=", attachment_type: "application/pdf" }, "attachment_type"],
     [{ html: true, monospace: true }, "Use either html or monospace, not both."],
     [{ url_title: "Open" }, "url_title requires url."],
     [{ attachment_base64: "aGk=" }, "attachment_base64 and attachment_type must be used together."],
@@ -239,6 +273,18 @@ describe("account tools", () => {
       devices: [],
       licenses: [],
       errors: ["user key is invalid"],
+    });
+  });
+
+  it("validate_user falls back to the error message when Pushover gives no reasons", async () => {
+    mockPushover({ status: 400, body: { status: 0, request: "r" } });
+    const client = await connect();
+
+    const result = await client.callTool({ name: "validate_user", arguments: {} });
+
+    expect(result.structuredContent).toMatchObject({
+      valid: false,
+      errors: ["Pushover API error (HTTP 400)"],
     });
   });
 

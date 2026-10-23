@@ -5,7 +5,8 @@ import type { Priority, PushoverClient } from "../pushover/client.js";
 export interface NotificationDefaults {
   device?: string;
   sound?: string;
-  priority?: Priority;
+  /** Emergency (2) is excluded: every send without a priority would repeat until acknowledged. */
+  priority?: Exclude<Priority, 2>;
 }
 
 export interface ToolContext {

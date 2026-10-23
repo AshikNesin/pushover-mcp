@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { open } from "node:fs/promises";
 import { homedir } from "node:os";
 import { extname, resolve } from "node:path";
 import type { Attachment } from "./client.js";
@@ -6,7 +6,17 @@ import type { Attachment } from "./client.js";
 /** Pushover rejects attachments larger than 5 MB. */
 export const MAX_ATTACHMENT_BYTES = 5_242_880;
 
-const IMAGE_TYPES: Record<string, string> = {
+export const IMAGE_MIME_TYPES = [
+  "image/gif",
+  "image/heic",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export type ImageMimeType = (typeof IMAGE_MIME_TYPES)[number];
+
+const IMAGE_TYPES: Record<string, ImageMimeType> = {
   ".gif": "image/gif",
   ".heic": "image/heic",
   ".jpeg": "image/jpeg",
@@ -23,13 +33,21 @@ export async function readAttachment(path: string): Promise<Attachment> {
     throw new Error(`Unsupported attachment type "${path}". Supported: ${supported}.`);
   }
 
-  const data = await readFile(expandHome(path));
-  assertSize(data.byteLength);
-  return { base64: data.toString("base64"), type };
+  // Check the size before reading, so an oversized file is never loaded into memory.
+  const file = await open(expandHome(path));
+  try {
+    const stats = await file.stat();
+    if (!stats.isFile()) throw new Error(`Attachment "${path}" is not a file.`);
+    assertSize(stats.size);
+    const data = await file.readFile();
+    return { base64: data.toString("base64"), type };
+  } finally {
+    await file.close();
+  }
 }
 
 /** Validates an attachment supplied as base64. */
-export function base64Attachment(base64: string, type: string): Attachment {
+export function base64Attachment(base64: string, type: ImageMimeType): Attachment {
   assertSize(Buffer.byteLength(base64, "base64"));
   return { base64, type };
 }

@@ -1,12 +1,17 @@
 import { z } from "zod";
-import { base64Attachment, readAttachment } from "../pushover/attachment.js";
+import {
+  base64Attachment,
+  IMAGE_MIME_TYPES,
+  type ImageMimeType,
+  readAttachment,
+} from "../pushover/attachment.js";
 import type { Attachment, PushoverMessage } from "../pushover/client.js";
 import { structuredResult, type ToolContext, type ToolRegistrar } from "./shared.js";
 
 const EMERGENCY = 2;
 const EMERGENCY_DEFAULTS = { retry: 60, expire: 3600 };
 
-export const prioritySchema = z.literal([-2, -1, 0, 1, 2]);
+const prioritySchema = z.literal([-2, -1, 0, 1, 2]);
 
 const fields = {
   message: z.string().min(1).max(1024).describe("Notification body, up to 1024 characters."),
@@ -61,10 +66,7 @@ const fields = {
     .optional()
     .describe("Priority 2 only: labels for cancelling with cancel_emergency."),
   attachment_base64: z.base64().optional().describe("Base64-encoded image, up to 5 MB."),
-  attachment_type: z
-    .string()
-    .optional()
-    .describe("MIME type of attachment_base64, e.g. image/png."),
+  attachment_type: z.enum(IMAGE_MIME_TYPES).optional().describe("MIME type of attachment_base64."),
 };
 
 const fileField = {
@@ -74,8 +76,9 @@ const fileField = {
     .describe("Path to a local image (jpg, png, gif, webp, heic) to attach, up to 5 MB."),
 };
 
-const inputWithFile = z.object({ ...fields, ...fileField });
-const inputWithoutFile = z.object(fields);
+// Strict, so unsupported keys (like attachment_path over HTTP) fail instead of being dropped.
+const inputWithFile = z.strictObject({ ...fields, ...fileField });
+const inputWithoutFile = z.strictObject(fields);
 type SendNotificationInput = z.output<typeof inputWithFile>;
 
 const outputSchema = z.object({
@@ -153,7 +156,7 @@ function assertConsistent(input: SendNotificationInput): void {
 async function toAttachment(
   path?: string,
   base64?: string,
-  type?: string,
+  type?: ImageMimeType,
 ): Promise<Attachment | undefined> {
   if (path) return readAttachment(path);
   if (base64 && type) return base64Attachment(base64, type);
