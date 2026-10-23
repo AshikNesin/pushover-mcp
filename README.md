@@ -217,6 +217,17 @@ pnpm build
 pnpm inspect    # open the server in MCP Inspector
 ```
 
+## Thanks
+
+To everyone whose reports and pull requests shaped v2:
+
+- [@jtenniswood](https://github.com/jtenniswood) reported the Claude Desktop startup error ([#3](https://github.com/AshikNesin/pushover-mcp/issues/3)).
+- [@bcdonadio](https://github.com/bcdonadio) proposed the move to the newer MCP spec ([#6](https://github.com/AshikNesin/pushover-mcp/pull/6)).
+- [@craigles75](https://github.com/craigles75) proposed HTML formatting ([#9](https://github.com/AshikNesin/pushover-mcp/pull/9)).
+- [@webbrain-one](https://github.com/webbrain-one) proposed the stderr logging fix ([#10](https://github.com/AshikNesin/pushover-mcp/pull/10)).
+- [@punkpeye](https://github.com/punkpeye) flagged the Docker setup for the Glama directory ([#4](https://github.com/AshikNesin/pushover-mcp/issues/4)).
+- [@calclavia](https://github.com/calclavia) added the original Smithery and Docker setup ([#2](https://github.com/AshikNesin/pushover-mcp/pull/2)).
+
 ## License
 
 MIT

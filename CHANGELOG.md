@@ -2,7 +2,7 @@
 
 ## 2.0.0 (unreleased)
 
-A rewrite on MCP TypeScript SDK v2, implementing the 2026-07-28 MCP spec while still serving older clients.
+A rewrite on MCP TypeScript SDK v2, implementing the 2026-07-28 MCP spec while still serving older clients. Thanks to [@bcdonadio](https://github.com/bcdonadio) for proposing the spec upgrade in [#6](https://github.com/AshikNesin/pushover-mcp/pull/6).
 
 ### Breaking changes
 
@@ -20,7 +20,7 @@ Existing v1 configs keep working: `pushover-mcp start --token … --user …` st
 
 ### New
 
-- `send_notification` covers the whole Pushover message API: `html`, `monospace`, `ttl`, `timestamp`, image attachments, and emergency `retry`, `expire`, `callback` and `tags`.
+- `send_notification` covers the whole Pushover message API: `html`, `monospace`, `ttl`, `timestamp`, image attachments, and emergency `retry`, `expire`, `callback` and `tags`. HTML formatting was proposed by [@craigles75](https://github.com/craigles75) in [#9](https://github.com/AshikNesin/pushover-mcp/pull/9).
 - New tools: `get_receipt`, `cancel_emergency`, `list_sounds`, `validate_user` and `get_limits`.
 - Every tool has a title, annotations and an output schema, and returns structured content.
 - Configuration through environment variables, with defaults for device, sound and priority.
@@ -30,9 +30,9 @@ Existing v1 configs keep working: `pushover-mcp start --token … --user …` st
 
 ### Fixed
 
-- Startup messages broke Claude Desktop by writing to stdout. All logs now go to stderr ([#3](https://github.com/AshikNesin/pushover-mcp/issues/3)).
+- Startup messages broke Claude Desktop by writing to stdout. All logs now go to stderr. Reported by [@jtenniswood](https://github.com/jtenniswood) in [#3](https://github.com/AshikNesin/pushover-mcp/issues/3); fix proposed by [@webbrain-one](https://github.com/webbrain-one) in [#10](https://github.com/AshikNesin/pushover-mcp/pull/10).
 - Emergency notifications (priority 2) always failed because `retry` and `expire` were never sent. They now default to 60 and 3600 seconds.
-- The Docker image exited on start unless launched through Smithery. It now reads its config from env vars, builds in two stages and runs as a non-root user ([#4](https://github.com/AshikNesin/pushover-mcp/issues/4)).
+- The Docker image exited on start unless launched through Smithery. It now reads its config from env vars, builds in two stages and runs as a non-root user. Flagged by [@punkpeye](https://github.com/punkpeye) in [#4](https://github.com/AshikNesin/pushover-mcp/issues/4).
 - The server reports its real version instead of a hardcoded `1.0.0`.
 
 ## 1.0.0
