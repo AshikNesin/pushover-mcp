@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <title>pushover-mcp OG image</title>
 <style>
-  :root { --bg: #0e0e0d; --text: #f2efe9; --muted: #9b968e; --line: #3a3733; --card: #222120; --blue: #2b8de8; }
+  :root {
+    --bg: #0e0e0d; --text: #f2efe9; --muted: #9b968e; --body: #b4afa7; --line: #3a3733; --card: #222120; --blue: #2b8de8;
+    --alert-bg: #3d1e21; --alert-line: #a63d42;
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f3ef; --text: #16181c; --muted: #6b6760; --body: #57534d; --line: #d9d6cf; --card: #ffffff;
+    --alert-bg: #fdeeee; --alert-line: #eba5a8;
+  }
   * { box-sizing: border-box; margin: 0; }
   html, body { width: 1280px; height: 640px; overflow: hidden; background: var(--bg); }
   body { font-family: "Inter", sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; position: relative; }
@@ -26,8 +33,8 @@
   .note-icon svg { width: 16px; height: 16px; }
   .note-head .when { margin-left: auto; }
   .note-title { font-size: 23px; font-weight: 700; margin-top: 11px; }
-  .note-body { font-size: 18px; color: #b4afa7; margin-top: 3px; }
-  .note.emergency { background: #3d1e21; border-color: #a63d42; }
+  .note-body { font-size: 18px; color: var(--body); margin-top: 3px; }
+  .note.emergency { background: var(--alert-bg); border-color: var(--alert-line); }
   .note.emergency .note-icon { background: #e5484d; }
 </style>
 </head>
@@ -66,6 +73,7 @@
 
 <script>
   window.VIDEO = { width: 1280, height: 640, duration: 0 };
+  document.documentElement.dataset.theme = new URLSearchParams(location.search).get("theme") ?? "dark";
   window.render = () => {};
 </script>
 </body>

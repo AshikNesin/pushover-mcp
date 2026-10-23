@@ -18,6 +18,34 @@
     --blue: #2b8de8;
     --red: #e5484d;
     --green: #1a7f37;
+    --card-line: transparent;
+    --o-text: #f2efe9;
+    --o-muted: #9b968e;
+    --o-body: #b4afa7;
+    --o-faint: #77726b;
+    --o-card: #222120;
+    --o-line: #3a3733;
+    --o-ghost-line: #2c2a27;
+    --o-ghost-1: #1a1917;
+    --o-ghost-2: #151413;
+    --o-sep: #4d4944;
+    --o-rule: #2a2825;
+  }
+  /* Light theme (?theme=light): light frame and outro; the terminal stays dark. */
+  :root[data-theme="light"] {
+    --frame: #f4f3ef;
+    --card-line: #e2e0da;
+    --o-text: #16181c;
+    --o-muted: #6b6760;
+    --o-body: #57534d;
+    --o-faint: #8a857e;
+    --o-card: #ffffff;
+    --o-line: #d9d6cf;
+    --o-ghost-line: #e2dfd8;
+    --o-ghost-1: #fbfaf8;
+    --o-ghost-2: #f8f7f4;
+    --o-sep: #c4c0b8;
+    --o-rule: #e2dfd8;
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { width: 1080px; height: 1080px; overflow: hidden; background: var(--frame); }
@@ -26,7 +54,7 @@
   [data-in] { opacity: 0; }
 
   /* ---------- Result card (act 2) ---------- */
-  .card { position: absolute; inset: 26px; background: #fff; border-radius: 18px; padding: 48px; color: var(--ink); }
+  .card { position: absolute; inset: 26px; background: #fff; border: 1px solid var(--card-line); border-radius: 18px; padding: 48px; color: var(--ink); }
   .card h1 { font-size: 46px; font-weight: 750; letter-spacing: -1.4px; }
   .card .subtitle { font-size: 23px; color: var(--ink-muted); margin-top: 8px; }
 
@@ -75,26 +103,26 @@
 
   /* ---------- Outro (act 3) ---------- */
   #stage { position: absolute; inset: 0; z-index: 1; }
-  .outro { position: absolute; inset: 0; z-index: 0; color: #f2efe9; }
+  .outro { position: absolute; inset: 0; z-index: 0; color: var(--o-text); }
   .stack { position: absolute; left: 160px; top: 260px; width: 760px; height: 196px; }
   .ghost, .banner { position: absolute; left: 0; right: 0; height: 196px; border-radius: 30px; }
-  .ghost { border: 1px solid #2c2a27; }
-  .ghost.one { background: #1a1917; }
-  .ghost.two { background: #151413; }
-  .banner { background: #222120; border: 1px solid #3a3733; padding: 30px 34px; }
-  .banner-head { display: flex; align-items: center; gap: 14px; font-size: 20px; color: #9b968e; }
+  .ghost { border: 1px solid var(--o-ghost-line); }
+  .ghost.one { background: var(--o-ghost-1); }
+  .ghost.two { background: var(--o-ghost-2); }
+  .banner { background: var(--o-card); border: 1px solid var(--o-line); padding: 30px 34px; }
+  .banner-head { display: flex; align-items: center; gap: 14px; font-size: 20px; color: var(--o-muted); }
   .banner-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--blue); color: #fff; display: grid; place-items: center; }
   .banner-icon svg { width: 23px; height: 23px; }
   .banner-head .when { margin-left: auto; }
   .banner-title { font-size: 40px; font-weight: 750; letter-spacing: -1px; margin-top: 18px; }
-  .banner-body { font-size: 25px; color: #b4afa7; margin-top: 6px; }
-  .command { position: absolute; left: 160px; top: 550px; width: 760px; padding: 26px 32px; border: 1px solid #3a3733; border-radius: 18px; font-size: 32px; font-weight: 600; }
+  .banner-body { font-size: 25px; color: var(--o-body); margin-top: 6px; }
+  .command { position: absolute; left: 160px; top: 550px; width: 760px; padding: 26px 32px; border: 1px solid var(--o-line); border-radius: 18px; font-size: 32px; font-weight: 600; }
   .command .dollar { color: var(--blue); margin-right: 18px; }
-  .command .caret { background: #f2efe9; height: 34px; vertical-align: -6px; }
+  .command .caret { background: var(--o-text); height: 34px; vertical-align: -6px; }
   .clients { position: absolute; left: 160px; top: 686px; width: 760px; display: flex; align-items: center; gap: 16px; font-size: 21px; white-space: nowrap; }
-  .clients .label { color: #77726b; letter-spacing: 3px; margin-right: 6px; }
-  .clients .sep { color: #4d4944; }
-  .footer { position: absolute; left: 60px; right: 60px; bottom: 56px; padding-top: 24px; border-top: 1px solid #2a2825; display: flex; justify-content: space-between; font-size: 19px; color: #8a857e; }
+  .clients .label { color: var(--o-faint); letter-spacing: 3px; margin-right: 6px; }
+  .clients .sep { color: var(--o-sep); }
+  .footer { position: absolute; left: 60px; right: 60px; bottom: 56px; padding-top: 24px; border-top: 1px solid var(--o-rule); display: flex; justify-content: space-between; font-size: 19px; color: var(--o-faint); }
 </style>
 </head>
 <body>
@@ -204,6 +232,7 @@
 
 <script>
   window.VIDEO = { width: 1080, height: 1080, duration: 30 };
+  document.documentElement.dataset.theme = new URLSearchParams(location.search).get("theme") ?? "dark";
 
   const PROMPT = "run the tests, deploy to staging, and ping my phone at each step. wake me up if prod breaks.";
   const TYPE_START = 0.6;
