@@ -37,7 +37,13 @@ Requires Node.js 22 or later.
 claude mcp add pushover -e PUSHOVER_TOKEN=YOUR_TOKEN -e PUSHOVER_USER=YOUR_USER_KEY -- npx -y pushover-mcp@latest
 ```
 
-### Claude Desktop, Cursor, Windsurf, Cline, Roo Code
+### OpenAI Codex
+
+```bash
+codex mcp add pushover --env PUSHOVER_TOKEN=YOUR_TOKEN --env PUSHOVER_USER=YOUR_USER_KEY -- npx -y pushover-mcp@latest
+```
+
+### Claude Desktop, Cursor, Cline
 
 Add this to your client's MCP config file:
 
@@ -60,9 +66,7 @@ Add this to your client's MCP config file:
 | --- | --- |
 | Claude Desktop | Settings → Developer → Edit Config |
 | Cursor | `~/.cursor/mcp.json`, or `.cursor/mcp.json` in a project |
-| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
 | Cline | MCP Servers → Configure MCP Servers |
-| Roo Code | Settings → MCP Servers → Edit Global MCP |
 
 ### VS Code
 
@@ -82,6 +86,25 @@ Add `.vscode/mcp.json`. VS Code prompts for the keys once and stores them secure
       "env": {
         "PUSHOVER_TOKEN": "${input:pushover-token}",
         "PUSHOVER_USER": "${input:pushover-user}"
+      }
+    }
+  }
+}
+```
+
+### Zed
+
+Add this to your Zed `settings.json`, or use Settings → AI → MCP Servers → Add Local Server:
+
+```json
+{
+  "context_servers": {
+    "pushover": {
+      "command": "npx",
+      "args": ["-y", "pushover-mcp@latest"],
+      "env": {
+        "PUSHOVER_TOKEN": "YOUR_TOKEN",
+        "PUSHOVER_USER": "YOUR_USER_KEY"
       }
     }
   }
