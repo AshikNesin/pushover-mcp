@@ -5,12 +5,10 @@
 
 An [MCP](https://modelcontextprotocol.io) server that lets AI agents send push notifications to your phone and desktop through [Pushover](https://pushover.net).
 
-<a href="media/demo-light.mp4">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="media/demo.gif">
-    <img src="media/demo-light.gif" width="600" alt="Claude Code runs tests and a deploy, sending a Pushover notification to a phone at each step, then an emergency alert that the agent sees acknowledged">
-  </picture>
-</a>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="media/demo.gif">
+  <img src="media/demo-light.gif" width="600" alt="Claude Code runs tests and a deploy, sending a Pushover notification to a phone at each step, then an emergency alert that the agent sees acknowledged">
+</picture>
 
 - **Rich notifications:** title, link, sound, device, HTML or monospace text, image attachments
 - **Emergency alerts:** repeat until acknowledged, then check or cancel them
@@ -183,7 +181,7 @@ Anyone who can reach the server can send notifications with your keys, so:
 - For remote access, put it behind HTTPS.
 
 ```bash
-PUSHOVER_MCP_AUTH_TOKEN=a-long-random-secret npx pushover-mcp --transport http --host 0.0.0.0
+PUSHOVER_TOKEN=... PUSHOVER_USER=... PUSHOVER_MCP_AUTH_TOKEN=a-long-random-secret npx pushover-mcp --transport http --host 0.0.0.0
 ```
 
 ## Use as a library
