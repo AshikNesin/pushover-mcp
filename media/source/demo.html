@@ -1,0 +1,346 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pushover-mcp demo</title>
+<style>
+  :root {
+    --frame: #0e0e0d;
+    --term-bg: #1c1b19;
+    --term-line: #34312d;
+    --term-text: #e6e1d9;
+    --term-muted: #8c877f;
+    --term-accent: #e8825a;
+    --term-prompt-bg: #2c2522;
+    --dot: #5fd38d;
+    --ink: #111418;
+    --ink-muted: #6b7280;
+    --blue: #2b8de8;
+    --red: #e5484d;
+    --green: #1a7f37;
+    --card-line: transparent;
+    --o-text: #f2efe9;
+    --o-muted: #9b968e;
+    --o-body: #b4afa7;
+    --o-faint: #77726b;
+    --o-card: #222120;
+    --o-line: #3a3733;
+    --o-ghost-line: #2c2a27;
+    --o-ghost-1: #1a1917;
+    --o-ghost-2: #151413;
+    --o-sep: #4d4944;
+    --o-rule: #2a2825;
+  }
+  /* Light theme (?theme=light): light frame and outro; the terminal stays dark. */
+  :root[data-theme="light"] {
+    --frame: #f4f3ef;
+    --card-line: #e2e0da;
+    --o-text: #16181c;
+    --o-muted: #6b6760;
+    --o-body: #57534d;
+    --o-faint: #716c65;
+    --o-card: #ffffff;
+    --o-line: #d9d6cf;
+    --o-ghost-line: #e2dfd8;
+    --o-ghost-1: #fbfaf8;
+    --o-ghost-2: #f8f7f4;
+    --o-sep: #c4c0b8;
+    --o-rule: #e2dfd8;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1080px; height: 1080px; overflow: hidden; background: var(--frame); }
+  body { font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; position: relative; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  [data-in] { opacity: 0; }
+
+  /* ---------- Result card (act 2) ---------- */
+  .card { position: absolute; inset: 26px; background: #fff; border: 1px solid var(--card-line); border-radius: 18px; padding: 48px; color: var(--ink); }
+  .card h1 { font-size: 46px; font-weight: 750; letter-spacing: -1.4px; }
+  .card .subtitle { font-size: 23px; color: var(--ink-muted); margin-top: 8px; }
+
+  .phone { position: absolute; left: 48px; top: 172px; width: 330px; height: 560px; border-radius: 48px; border: 9px solid #15191f; background: #1a2230; overflow: hidden; }
+  .phone-time { position: absolute; top: 58px; width: 100%; text-align: center; color: #eef2f6; font-size: 76px; font-weight: 300; letter-spacing: -3px; }
+  .phone-date { position: absolute; top: 40px; width: 100%; text-align: center; color: #b7bfc9; font-size: 17px; font-weight: 500; }
+  .notes { position: absolute; top: 158px; left: 12px; right: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .note { padding: 13px 15px; border-radius: 20px; background: #2b3442; border: 1px solid #36404f; color: #eef2f6; }
+  .note-head { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b7bfc9; }
+  .note-icon { width: 22px; height: 22px; border-radius: 6px; background: var(--blue); display: grid; place-items: center; }
+  .note-icon svg { width: 13px; height: 13px; }
+  .note-head .when { margin-left: auto; }
+  .note-title { font-size: 17px; font-weight: 650; margin-top: 7px; }
+  .note-body { font-size: 15px; margin-top: 2px; color: #dfe4ea; }
+  .note-link { font-size: 15px; margin-top: 4px; color: #8cc4ff; }
+  .note.emergency { background: #4a2226; border-color: #c4474c; }
+  .note.emergency .note-icon { background: var(--red); }
+  .ack { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 999px; background: #1f4a33; color: #8fe3b1; font-size: 13px; font-weight: 600; }
+
+  .checks { position: absolute; left: 418px; top: 196px; width: 560px; display: flex; flex-direction: column; gap: 26px; }
+  .check { display: flex; gap: 14px; font-size: 23px; line-height: 1.4; color: #374151; }
+  .check .tick { color: var(--green); font-weight: 800; }
+  .check b { color: var(--ink); }
+
+  .pill { position: absolute; left: 48px; top: 770px; padding: 16px 28px; border-radius: 999px; background: #f3f4f6; border: 1px solid #e5e7eb; color: #374151; font-size: 23px; font-weight: 600; white-space: nowrap; }
+
+  /* ---------- Terminal (acts 1–2) ---------- */
+  .terminal { position: absolute; inset: 26px; background: var(--term-bg); border: 1px solid var(--term-line); border-radius: 18px; overflow: hidden; transform-origin: 100% 100%; color: var(--term-text); }
+  .term-bar { height: 46px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--term-line); position: relative; }
+  .light { width: 13px; height: 13px; border-radius: 50%; margin-right: 9px; }
+  .term-title { position: absolute; left: 0; right: 0; text-align: center; font-size: 17px; color: var(--term-muted); }
+  .viewport { position: absolute; top: 47px; left: 0; right: 0; bottom: 0; overflow: hidden; padding: 0 34px; }
+  .content { padding-top: 26px; font-size: 24px; line-height: 1.5; }
+  .row { margin-bottom: 14px; }
+  .row .bullet { color: var(--dot); margin-right: 14px; }
+  .row .detail { color: var(--term-muted); padding-left: 30px; }
+  .row .detail::before { content: "⎿  "; }
+  .prompt-block { background: var(--term-prompt-bg); border-left: 3px solid var(--term-accent); padding: 12px 18px; margin: 6px 0 18px; border-radius: 4px; }
+  .prompt-block .gt, .input .gt { color: var(--term-accent); margin-right: 10px; }
+  .status { color: var(--term-accent); margin-bottom: 14px; }
+  .input { border: 1px solid #4a4640; border-radius: 10px; padding: 12px 18px; margin-top: 8px; min-height: 60px; }
+  .input .gt { color: var(--term-muted); }
+  .caret { display: inline-block; width: 12px; height: 26px; background: var(--term-text); vertical-align: -5px; margin-left: 2px; }
+  .hint { color: #5d5953; font-size: 18px; margin-top: 10px; }
+  .muted { color: var(--term-muted); }
+
+  /* ---------- Outro (act 3) ---------- */
+  #stage { position: absolute; inset: 0; z-index: 1; }
+  .outro { position: absolute; inset: 0; z-index: 0; color: var(--o-text); }
+  .stack { position: absolute; left: 160px; top: 260px; width: 760px; height: 196px; }
+  .ghost, .banner { position: absolute; left: 0; right: 0; height: 196px; border-radius: 30px; }
+  .ghost { border: 1px solid var(--o-ghost-line); }
+  .ghost.one { background: var(--o-ghost-1); }
+  .ghost.two { background: var(--o-ghost-2); }
+  .banner { background: var(--o-card); border: 1px solid var(--o-line); padding: 30px 34px; }
+  .banner-head { display: flex; align-items: center; gap: 14px; font-size: 20px; color: var(--o-muted); }
+  .banner-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--blue); color: #fff; display: grid; place-items: center; }
+  .banner-icon svg { width: 23px; height: 23px; }
+  .banner-head .when { margin-left: auto; }
+  .banner-title { font-size: 40px; font-weight: 750; letter-spacing: -1px; margin-top: 18px; }
+  .banner-body { font-size: 25px; color: var(--o-body); margin-top: 6px; }
+  .command { position: absolute; left: 160px; top: 550px; width: 760px; padding: 26px 32px; border: 1px solid var(--o-line); border-radius: 18px; font-size: 32px; font-weight: 600; }
+  .command .dollar { color: var(--blue); margin-right: 18px; }
+  .command .caret { background: var(--o-text); height: 34px; vertical-align: -6px; }
+  .clients { position: absolute; left: 160px; top: 686px; width: 760px; display: flex; align-items: center; gap: 12px; font-size: 21px; white-space: nowrap; }
+  .clients .label { color: var(--o-faint); letter-spacing: 3px; margin-right: 6px; }
+  .clients .sep { color: var(--o-sep); }
+  .footer { position: absolute; left: 60px; right: 60px; bottom: 56px; padding-top: 24px; border-top: 1px solid var(--o-rule); display: flex; justify-content: space-between; font-size: 19px; color: var(--o-faint); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.96 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.41 5.96-2.74 7.33"/>
+    <path d="M10.27 21a2 2 0 0 0 3.46 0"/>
+  </symbol>
+</svg>
+
+<div id="stage">
+<!-- Act 2: result card, revealed as the terminal shrinks -->
+<div class="card">
+  <h1>Your phone, the moment it matters</h1>
+  <div class="subtitle">every step · zero babysitting · emergencies that wake you</div>
+
+  <div class="phone">
+    <div class="phone-date">Friday, October 23</div>
+    <div class="phone-time">9:41</div>
+    <div class="notes">
+      <div class="note" data-show="11.7">
+        <div class="note-head"><span class="note-icon" style="color:#fff"><svg><use href="#bell"/></svg></span>Pushover<span class="when">4m ago</span></div>
+        <div class="note-title">Tests passed</div>
+        <div class="note-body">312 passed · 0 failed · 4m 12s</div>
+      </div>
+      <div class="note" data-show="12.4">
+        <div class="note-head"><span class="note-icon" style="color:#fff"><svg><use href="#bell"/></svg></span>Pushover<span class="when">1m ago</span></div>
+        <div class="note-title">Deploy finished</div>
+        <div class="note-body">v2.4.0 is live on staging</div>
+        <div class="note-link">View release →</div>
+      </div>
+      <div class="note emergency" id="emergency" data-show="15.2">
+        <div class="note-head"><span class="note-icon" style="color:#fff"><svg><use href="#bell"/></svg></span>Pushover · Emergency<span class="when">now</span></div>
+        <div class="note-title">Checkout errors at 12%</div>
+        <div class="note-body">Repeats until you acknowledge</div>
+        <div class="ack" data-in="17.9">✓ Acknowledged</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="checks">
+    <div class="check" data-in="18.8"><span class="tick">✓</span><div><b>Any MCP client.</b> Claude Code, Codex, Cursor, <span style="white-space:nowrap">VS Code</span>, Zed and more.</div></div>
+    <div class="check" data-in="19.6"><span class="tick">✓</span><div><b>Rich notifications.</b> Links, images, sounds and per-device targeting.</div></div>
+    <div class="check" data-in="20.4"><span class="tick">✓</span><div><b>Emergency alerts.</b> They repeat until you acknowledge, and your agent can check.</div></div>
+  </div>
+
+  <div class="pill" data-in="21.4">walk away from the terminal</div>
+</div>
+
+<!-- Acts 1–2: Claude Code session -->
+<div class="terminal" id="terminal">
+  <div class="term-bar">
+    <span class="light" style="background:#ff5f57"></span><span class="light" style="background:#febc2e"></span><span class="light" style="background:#28c840"></span>
+    <div class="term-title mono">dev@mbp: ~/acme-shop — claude</div>
+  </div>
+  <div class="viewport">
+    <div class="content mono" id="content">
+      <div class="row"><span style="color: var(--term-accent)">✻</span> Welcome to Claude Code!</div>
+      <div class="row muted" style="font-size: 20px;">~/acme-shop</div>
+
+      <div class="prompt-block" data-show="3.9"><span class="gt">&gt;</span><span id="sent-prompt"></span></div>
+
+      <div class="row" data-show="4.4"><span class="bullet">●</span>Bash(pnpm test)<div class="detail">312 passed · 0 failed · 4m 12s</div></div>
+      <div class="row" data-show="5.4"><span class="bullet">●</span>pushover - send_notification (MCP)<div class="detail">"Tests passed" → iPhone</div></div>
+      <div class="row" data-show="6.5"><span class="bullet">●</span>Bash(pnpm deploy:staging)<div class="detail">v2.4.0 deployed to staging</div></div>
+      <div class="row" data-show="7.5"><span class="bullet">●</span>pushover - send_notification (MCP)<div class="detail">"Deploy finished" + release link</div></div>
+      <div class="row" data-show="8.6"><span class="bullet">●</span>Watching production error rate…</div>
+      <div class="row" data-show="13.7"><span class="bullet" style="color: var(--red)">●</span>Checkout error rate 12% (threshold 2%)</div>
+      <div class="row" data-show="14.4"><span class="bullet">●</span>pushover - send_notification (MCP)<div class="detail">priority 2 · repeats until acknowledged</div></div>
+      <div class="row" data-show="17.3"><span class="bullet">●</span>pushover - get_receipt (MCP)<div class="detail">✓ acknowledged on iPhone</div></div>
+
+      <div class="status" id="status"><span id="status-glyph">✻</span> Working… <span class="muted">(esc to interrupt · <span id="status-time">0s</span>)</span></div>
+
+      <div class="input"><span class="gt">&gt;</span><span id="typed"></span><span class="caret" id="caret"></span></div>
+      <div class="hint">? for shortcuts</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Act 3: outro, uncovered when the stage slides away -->
+<div class="outro">
+  <div class="stack">
+    <div class="ghost two" id="ghost-two"></div>
+    <div class="ghost one" id="ghost-one"></div>
+    <div class="banner" id="banner">
+      <div class="banner-head"><span class="banner-icon"><svg><use href="#bell"/></svg></span><span class="mono">pushover-mcp</span><span class="when">now</span></div>
+      <div class="banner-title">Your agent, on your phone.</div>
+      <div class="banner-body">Tests, deploys, outages. You'll know first.</div>
+    </div>
+  </div>
+
+  <div class="command mono" data-in="26.6"><span class="dollar">$</span><span id="install"></span><span class="caret" id="install-caret"></span></div>
+
+  <div class="clients mono">
+    <span class="label" data-in="28.0">WORKS WITH</span>
+    <span data-in="28.15">Claude Code</span><span class="sep" data-in="28.15">·</span>
+    <span data-in="28.27">Codex</span><span class="sep" data-in="28.27">·</span>
+    <span data-in="28.39">Cursor</span><span class="sep" data-in="28.39">·</span>
+    <span data-in="28.51">VS Code</span><span class="sep" data-in="28.51">·</span>
+    <span data-in="28.63">Zed</span>
+  </div>
+
+  <div class="footer mono" data-in="28.9"><span>github.com/AshikNesin/pushover-mcp</span><span>MIT licensed</span></div>
+</div>
+
+<script>
+  window.VIDEO = { width: 1080, height: 1080, duration: 30 };
+  document.documentElement.dataset.theme = new URLSearchParams(location.search).get("theme") ?? "dark";
+
+  const PROMPT = "run the tests, deploy to staging, and ping my phone at each step. wake me up if prod breaks.";
+  const TYPE_START = 0.6;
+  const TYPE_END = 3.5;
+  const SUBMIT = 3.9;
+  const WORKING = [[SUBMIT, 9.4], [13.4, 17.6]];
+  const SHRINK = [10.4, 11.3];
+  const MINI_SCALE = 0.42;
+  const EXIT = [25.0, 25.7];
+  const BANNER_DROP = [25.9, 26.55];
+  const INSTALL = "npx -y pushover-mcp@latest";
+  const INSTALL_TYPE = [26.9, 27.8];
+  const GLYPHS = "✻✶✳✢·✢✳✶";
+
+  const clamp = (x) => Math.min(1, Math.max(0, x));
+  const easeOut = (x) => 1 - (1 - x) ** 3;
+  const easeInOut = (x) => (x < 0.5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2);
+  const easeOutBack = (x) => 1 + 2.2 * (x - 1) ** 3 + 1.2 * (x - 1) ** 2;
+  const progress = (t, [start, end]) => clamp((t - start) / (end - start));
+
+  /** Terminal rows and phone notifications appear at data-show, with a short fade and lift. */
+  function showRows(t) {
+    for (const el of document.querySelectorAll("[data-show]")) {
+      const p = clamp((t - Number(el.dataset.show)) / 0.25);
+      el.style.display = p > 0 ? "" : "none";
+      el.style.opacity = easeOut(p);
+      el.style.transform = `translateY(${(1 - easeOut(p)) * 10}px)`;
+    }
+  }
+
+  /** Card and outro elements fade up at data-in. */
+  function fadeIns(t) {
+    for (const el of document.querySelectorAll("[data-in]")) {
+      const p = easeOut(clamp((t - Number(el.dataset.in)) / 0.5));
+      el.style.opacity = p;
+      el.style.transform = `translateY(${(1 - p) * 18}px)`;
+    }
+  }
+
+  function typing(t) {
+    const typed = PROMPT.slice(0, Math.round(progress(t, [TYPE_START, TYPE_END]) * PROMPT.length));
+    document.getElementById("typed").textContent = t < SUBMIT ? typed : "";
+    document.getElementById("sent-prompt").textContent = PROMPT;
+    const busy = t >= TYPE_START && t <= TYPE_END;
+    document.getElementById("caret").style.opacity = busy || Math.floor(t * 2) % 2 === 0 ? 1 : 0;
+  }
+
+  function status(t) {
+    const span = WORKING.find(([start, end]) => t >= start && t < end);
+    document.getElementById("status").style.display = span ? "" : "none";
+    if (!span) return;
+    document.getElementById("status-glyph").textContent = GLYPHS[Math.floor(t * 8) % GLYPHS.length];
+    document.getElementById("status-time").textContent = `${Math.floor(t - span[0])}s`;
+  }
+
+  /** Keeps the newest terminal line in view, like a real scrolling terminal. */
+  function scrollTerminal() {
+    const content = document.getElementById("content");
+    const overflow = content.scrollHeight - content.parentElement.clientHeight + 30;
+    content.style.transform = `translateY(${-Math.max(0, overflow)}px)`;
+  }
+
+  /** Shrinks the terminal into the bottom-right corner to reveal the result card. */
+  function shrinkTerminal(t) {
+    const p = easeInOut(progress(t, SHRINK));
+    const terminal = document.getElementById("terminal");
+    terminal.style.transform = `scale(${1 - (1 - MINI_SCALE) * p})`;
+  }
+
+  /** Slides the result card and terminal up and out, uncovering the outro. */
+  function exitStage(t) {
+    document.getElementById("stage").style.transform =
+      `translateY(${-1080 * easeInOut(progress(t, EXIT))}px)`;
+  }
+
+  /** The outro is itself a notification: it drops onto a stack, then the install command types out. */
+  function outro(t) {
+    const drop = progress(t, BANNER_DROP);
+    const banner = document.getElementById("banner");
+    banner.style.opacity = clamp(drop * 4);
+    banner.style.transform = `translateY(${(1 - easeOutBack(drop)) * -260}px)`;
+
+    const settle = easeOut(clamp((t - BANNER_DROP[0] - 0.35) / 0.5));
+    for (const [id, depth] of [["ghost-one", 1], ["ghost-two", 2]]) {
+      const ghost = document.getElementById(id);
+      ghost.style.opacity = settle;
+      ghost.style.transform = `translateY(${18 * depth * settle}px) scale(${1 - 0.05 * depth * settle})`;
+    }
+
+    const typed = INSTALL.slice(0, Math.round(progress(t, INSTALL_TYPE) * INSTALL.length));
+    document.getElementById("install").textContent = typed;
+    const typing = t >= INSTALL_TYPE[0] && t <= INSTALL_TYPE[1];
+    document.getElementById("install-caret").style.opacity =
+      t >= 26.6 && (typing || Math.floor(t * 2) % 2 === 0) ? 1 : 0;
+  }
+
+  window.render = (t) => {
+    showRows(t);
+    fadeIns(t);
+    typing(t);
+    status(t);
+    scrollTerminal();
+    shrinkTerminal(t);
+    exitStage(t);
+    outro(t);
+  };
+  window.render(0);
+</script>
+</body>
+</html>

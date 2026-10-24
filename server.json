@@ -1,0 +1,52 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.AshikNesin/pushover-mcp",
+  "title": "Pushover",
+  "description": "Send Pushover push notifications from AI agents.",
+  "repository": {
+    "url": "https://github.com/AshikNesin/pushover-mcp",
+    "source": "github"
+  },
+  "version": "2.0.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "pushover-mcp",
+      "version": "2.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "PUSHOVER_TOKEN",
+          "description": "Pushover application API token",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "PUSHOVER_USER",
+          "description": "Pushover user or group key",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "PUSHOVER_DEFAULT_DEVICE",
+          "description": "Device to target when a notification does not name one",
+          "format": "string"
+        },
+        {
+          "name": "PUSHOVER_DEFAULT_SOUND",
+          "description": "Sound to use when a notification does not name one",
+          "format": "string"
+        },
+        {
+          "name": "PUSHOVER_DEFAULT_PRIORITY",
+          "description": "Priority to use when a notification does not set one: -2, -1, 0 or 1",
+          "format": "number"
+        }
+      ]
+    }
+  ]
+}
