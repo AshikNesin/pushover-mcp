@@ -12,8 +12,6 @@ An [MCP](https://modelcontextprotocol.io) server that lets AI agents send push n
   </picture>
 </a>
 
-Watch the full demo (30 s): [light](media/demo-light.mp4) · [dark](media/demo.mp4)
-
 - **Rich notifications:** title, link, sound, device, HTML or monospace text, image attachments
 - **Emergency alerts:** repeat until acknowledged, then check or cancel them
 - **Self-correcting:** clear tool errors the agent can act on
