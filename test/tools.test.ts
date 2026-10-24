@@ -173,7 +173,7 @@ describe("send_notification", () => {
       "Use either attachment_path or attachment_base64, not both.",
     ],
     [{ attachment_path: "" }, "attachment_path"],
-    [{ retry: 30, tags: ["x"] }, "retry, tags only apply to priority 2 notifications."],
+    [{ retry: 30, tags: ["x"] }, "retry, tags can only be used with priority 2 notifications."],
     [{ attachment_path: "notes.txt" }, 'Unsupported attachment type "notes.txt"'],
     [
       {
@@ -300,6 +300,32 @@ describe("account tools", () => {
       devices: [],
       licenses: [],
       errors: ["user key is invalid"],
+    });
+  });
+
+  it("validate_user reports an unknown device without failing", async () => {
+    mockPushover({
+      status: 400,
+      body: {
+        status: 0,
+        request: "r",
+        device: "invalid for this user",
+        group: 0,
+        licenses: ["iOS"],
+        errors: ["device name is not valid for user"],
+      },
+    });
+    const client = await connect();
+
+    const result = await client.callTool({
+      name: "validate_user",
+      arguments: { device: "tablet" },
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(result.structuredContent).toMatchObject({
+      valid: false,
+      errors: ["device name is not valid for user"],
     });
   });
 

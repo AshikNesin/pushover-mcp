@@ -160,10 +160,11 @@ export class PushoverClient {
     const data = (await response.json().catch(() => undefined)) as (T & ApiResponse) | undefined;
     if (!response.ok || data?.status !== 1) {
       const errors = data?.errors ?? [];
-      // Pushover marks each rejected parameter with the value "invalid", e.g. `"user": "invalid"`.
-      const invalid = Object.keys(data ?? {}).filter(
-        (key) => (data as Record<string, unknown>)[key] === "invalid",
-      );
+      // Pushover marks each rejected parameter with a value starting "invalid",
+      // e.g. `"user": "invalid"` or `"device": "invalid for this user"`.
+      const invalid = Object.entries(data ?? {})
+        .filter(([, value]) => typeof value === "string" && value.startsWith("invalid"))
+        .map(([key]) => key);
       const detail = errors.length > 0 ? errors.join("; ") : response.statusText;
       const summary = `Pushover API error (HTTP ${response.status})`;
       throw new PushoverError(detail ? `${summary}: ${detail}` : summary, response.status, {

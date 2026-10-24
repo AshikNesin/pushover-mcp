@@ -150,7 +150,7 @@ function assertConsistent(input: SendNotificationInput): void {
     (key) => input[key] !== undefined,
   );
   if (input.priority !== EMERGENCY && emergencyOnly.length > 0) {
-    throw new Error(`${emergencyOnly.join(", ")} only apply to priority 2 notifications.`);
+    throw new Error(`${emergencyOnly.join(", ")} can only be used with priority 2 notifications.`);
   }
 }
 
